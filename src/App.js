@@ -25,9 +25,10 @@ import {
 import WebApp from '@twa-dev/sdk';
 import './styles/animations.css';
 
-// Импортируем новые компоненты
+// Импортируем компоненты
 import CameraView from './components/CameraView';
 import ResultView from './components/ResultView';
+import HistoryView from './components/HistoryView';
 import { analyzeFoodImage } from './services/foodRecognition';
 
 // Создаем тему в стиле Telegram
@@ -118,11 +119,16 @@ function App() {
 
   const handleResultSave = (updatedData) => {
     setAnalysisResult(updatedData);
-    WebApp.showPopup({
-      title: 'Успех',
-      message: 'Данные успешно обновлены',
-      buttons: [{ type: 'ok' }]
-    });
+  };
+
+  const handleResultSkip = () => {
+    setCurrentView('main');
+    setCapturedImage(null);
+    setAnalysisResult(null);
+  };
+
+  const handleShowHistory = () => {
+    setCurrentView('history');
   };
 
   const renderMainView = () => (
@@ -156,6 +162,7 @@ function App() {
         <Button
           variant="outlined"
           startIcon={<HistoryIcon />}
+          onClick={handleShowHistory}
           className="ripple scale-in"
           fullWidth
         >
@@ -202,6 +209,11 @@ function App() {
               initialData={analysisResult}
               onBack={() => setCurrentView('main')}
               onSave={handleResultSave}
+              onSkip={handleResultSkip}
+            />
+          ) : currentView === 'history' ? (
+            <HistoryView
+              onBack={() => setCurrentView('main')}
             />
           ) : (
             renderMainView()

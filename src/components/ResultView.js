@@ -9,21 +9,32 @@ import {
   Button,
   Paper,
   Slider,
-  Chip
+  Chip,
+  Stack
 } from '@mui/material';
 import {
   Edit as EditIcon,
   Save as SaveIcon,
-  ArrowBack as ArrowBackIcon
+  ArrowBack as ArrowBackIcon,
+  Check as CheckIcon,
+  Close as CloseIcon
 } from '@mui/icons-material';
+import { saveToHistory } from '../services/historyService';
 
-const ResultView = ({ imageUrl, initialData, onBack, onSave }) => {
+const ResultView = ({ imageUrl, initialData, onBack, onSave, onSkip }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [data, setData] = useState(initialData);
 
   const handleSave = () => {
     setIsEditing(false);
     onSave(data);
+    saveToHistory(data, imageUrl);
+    onBack();
+  };
+
+  const handleSkip = () => {
+    onSkip();
+    onBack();
   };
 
   const handleSliderChange = (field) => (event, newValue) => {
@@ -136,15 +147,29 @@ const ResultView = ({ imageUrl, initialData, onBack, onSave }) => {
         </CardContent>
       </Card>
 
-      {isEditing && (
-        <Button
-          variant="contained"
-          fullWidth
-          onClick={handleSave}
-          className="scale-in"
-        >
-          Сохранить изменения
-        </Button>
+      {!isEditing && (
+        <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
+          <Button
+            variant="contained"
+            color="primary"
+            fullWidth
+            startIcon={<CheckIcon />}
+            onClick={handleSave}
+            className="scale-in"
+          >
+            Сохранить
+          </Button>
+          <Button
+            variant="outlined"
+            color="error"
+            fullWidth
+            startIcon={<CloseIcon />}
+            onClick={handleSkip}
+            className="scale-in"
+          >
+            Пропустить
+          </Button>
+        </Stack>
       )}
     </Box>
   );
