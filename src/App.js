@@ -29,28 +29,73 @@ import './styles/animations.css';
 import CameraView from './components/CameraView';
 import ResultView from './components/ResultView';
 import HistoryView from './components/HistoryView';
+import DailyStats from './components/DailyStats';
 import { analyzeFoodImage } from './services/foodRecognition';
 
-// Создаем тему в стиле Telegram
+// Создаем профессиональную тему
 const theme = createTheme({
   palette: {
-    mode: WebApp.colorScheme || 'light',
+    mode: 'dark',
     primary: {
-      main: '#008BEE',
+      main: '#7F5AF0', // Неоновый фиолетовый - основной акцент
+      light: '#A78BFA', // Светло-фиолетовый
+      dark: '#6D28D9', // Темно-фиолетовый
+    },
+    secondary: {
+      main: '#2CB67D', // Изумрудный - дополнительный акцент
+      light: '#4ADE80', // Светло-зеленый
+      dark: '#059669', // Темно-зеленый
     },
     background: {
-      default: WebApp.colorScheme === 'dark' ? '#1F1F1F' : '#F5F5F5',
-      paper: WebApp.colorScheme === 'dark' ? '#2C2C2C' : '#FFFFFF',
+      default: '#16161A', // Глубокий темный
+      paper: '#242629', // Темно-серый для карточек
     },
+    text: {
+      primary: '#FFFFFE', // Чистый белый
+      secondary: '#94A1B2', // Серебристый
+    },
+    success: {
+      main: '#2CB67D', // Изумрудный
+      light: '#4ADE80',
+    },
+    warning: {
+      main: '#FF8906', // Янтарный
+      light: '#FCD34D',
+    },
+    info: {
+      main: '#7F5AF0', // Неоновый фиолетовый
+      light: '#A78BFA',
+    },
+    error: {
+      main: '#EF4444', // Коралловый красный
+      light: '#F87171',
+    },
+    divider: 'rgba(255, 255, 255, 0.06)',
   },
   typography: {
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+    fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     h5: {
+      fontWeight: 700,
+      letterSpacing: '-0.02em',
+      color: '#FFFFFE',
+    },
+    h6: {
       fontWeight: 600,
+      letterSpacing: '-0.01em',
+      color: '#FFFFFE',
+    },
+    body1: {
+      color: '#FFFFFE',
+      letterSpacing: '0.01em',
+    },
+    body2: {
+      color: '#94A1B2',
+      letterSpacing: '0.01em',
     },
     button: {
       textTransform: 'none',
-      fontWeight: 500,
+      fontWeight: 600,
+      letterSpacing: '0.02em',
     },
   },
   components: {
@@ -58,12 +103,24 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 12,
-          padding: '12px 20px',
+          padding: '12px 24px',
+          transition: 'all 0.2s ease-in-out',
         },
         contained: {
-          boxShadow: 'none',
+          background: 'linear-gradient(135deg, #7F5AF0 0%, #6D28D9 100%)',
+          boxShadow: '0 4px 20px rgba(127, 90, 240, 0.15)',
           '&:hover': {
-            boxShadow: '0 4px 12px rgba(0, 139, 238, 0.2)',
+            background: 'linear-gradient(135deg, #A78BFA 0%, #7F5AF0 100%)',
+            boxShadow: '0 4px 25px rgba(127, 90, 240, 0.25)',
+            transform: 'translateY(-1px)',
+          },
+        },
+        outlined: {
+          borderColor: '#7F5AF0',
+          color: '#FFFFFE',
+          '&:hover': {
+            borderColor: '#A78BFA',
+            backgroundColor: 'rgba(127, 90, 240, 0.08)',
           },
         },
       },
@@ -71,8 +128,60 @@ const theme = createTheme({
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: 16,
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
+          borderRadius: 20,
+          backgroundColor: '#242629',
+          backdropFilter: 'blur(10px)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
+          border: '1px solid rgba(255, 255, 255, 0.06)',
+          transition: 'transform 0.2s ease-in-out',
+          '&:hover': {
+            transform: 'translateY(-2px)',
+          },
+        },
+      },
+    },
+    MuiLinearProgress: {
+      styleOverrides: {
+        root: {
+          backgroundColor: 'rgba(148, 161, 178, 0.1)',
+          borderRadius: 8,
+          overflow: 'hidden',
+        },
+        barColorPrimary: {
+          background: 'linear-gradient(90deg, #7F5AF0 0%, #A78BFA 100%)',
+        },
+        barColorSecondary: {
+          background: 'linear-gradient(90deg, #2CB67D 0%, #4ADE80 100%)',
+        },
+        barColorWarning: {
+          background: 'linear-gradient(90deg, #FF8906 0%, #FCD34D 100%)',
+        },
+        barColorInfo: {
+          background: 'linear-gradient(90deg, #7F5AF0 0%, #6D28D9 100%)',
+        },
+      },
+    },
+    MuiIconButton: {
+      styleOverrides: {
+        root: {
+          color: '#FFFFFE',
+          transition: 'all 0.2s ease-in-out',
+          '&:hover': {
+            backgroundColor: 'rgba(127, 90, 240, 0.08)',
+            transform: 'scale(1.05)',
+          },
+        },
+      },
+    },
+    MuiChip: {
+      styleOverrides: {
+        root: {
+          borderRadius: 8,
+          backgroundColor: 'rgba(127, 90, 240, 0.1)',
+          color: '#7F5AF0',
+          '&.MuiChip-clickable:hover': {
+            backgroundColor: 'rgba(127, 90, 240, 0.15)',
+          },
         },
       },
     },
@@ -147,6 +256,8 @@ function App() {
             </Typography>
           </CardContent>
         </Card>
+
+        <DailyStats />
 
         <Button
           variant="contained"

@@ -1,12 +1,15 @@
-const OPENAI_API_KEY = process.env.REACT_APP_OPENAI_API_KEY;
+import { analyzeFood } from './nutritionService';
+
+const API_KEY = process.env.REACT_APP_OPENAI_API_KEY;
 
 export const analyzeFoodImage = async (imageBase64) => {
   try {
+    // Первый запрос к ChatGPT для распознавания еды
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`
+        'Authorization': `Bearer ${API_KEY}`
       },
       body: JSON.stringify({
         model: "gpt-4-vision-preview",
@@ -16,7 +19,7 @@ export const analyzeFoodImage = async (imageBase64) => {
             content: [
               {
                 type: "text",
-                text: "Проанализируй это фото еды и предоставь следующую информацию в формате JSON: название блюда, калории на 100г, белки, жиры, углеводы. Ответ должен быть только в JSON формате."
+                text: "Опиши что за еда на фото и примерный размер порции в граммах. Формат ответа строго такой: 'food: название блюда, weight: вес в граммах'. Пример: 'food: куриная грудка с рисом, weight: 350'"
               },
               {
                 type: "image_url",
@@ -31,29 +34,36 @@ export const analyzeFoodImage = async (imageBase64) => {
       })
     });
 
-    const data = await response.json();
-    
-    if (data.error) {
-      throw new Error(data.error.message);
+    if (!response.ok) {
+      throw new Error('Failed to analyze image');
     }
 
-    const result = JSON.parse(data.choices[0].message.content);
+    const data = await response.json();
+    const result = data.choices[0].message.content;
+    
+    // Парсим результат
+    const foodMatch = result.match(/food: (.*?),/);
+    const weightMatch = result.match(/weight: (\d+)/);
+    
+    if (!foodMatch || !weightMatch) {
+      throw new Error('Failed to parse food recognition result');
+    }
+
+    const foodName = foodMatch[1];
+    const weight = parseInt(weightMatch[1]);
+
+    // Второй запрос к Nutrition API для получения пищевой ценности
+    const nutritionData = await analyzeFood(`${weight}g ${foodName}`);
+
     return {
-      name: result.name,
-      calories: result.calories,
-      protein: result.protein,
-      fats: result.fats,
-      carbs: result.carbs
+      name: foodName,
+      weight: weight,
+      ...nutritionData,
+      timestamp: new Date().toISOString()
     };
+
   } catch (error) {
-    console.error('Ошибка при анализе фото:', error);
-    // Возвращаем примерные данные в случае ошибки
-    return {
-      name: 'Не удалось определить',
-      calories: 0,
-      protein: 0,
-      fats: 0,
-      carbs: 0
-    };
+    console.error('Error in food recognition:', error);
+    throw error;
   }
 }; 

@@ -29,6 +29,7 @@ const ResultView = ({ imageUrl, initialData, onBack, onSave, onSkip }) => {
     setIsEditing(false);
     onSave(data);
     saveToHistory(data, imageUrl);
+    window.dispatchEvent(new Event('foodSaved'));
     onBack();
   };
 
