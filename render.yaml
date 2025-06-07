@@ -1,20 +1,13 @@
 services:
-  - type: web
+  - type: static
     name: kalogram-frontend
-    env: static
     buildCommand: npm install && npm run build
-    staticPublishPath: ./build
+    publishDir: build
     envVars:
       - key: NODE_VERSION
         value: 18
       - key: NODE_ENV
         value: production
-      - key: REACT_APP_OPENAI_API_KEY
-        sync: false
-      - key: REACT_APP_NUTRITION_API_KEY
-        sync: false
-      - key: REACT_APP_NUTRITION_APP_ID
-        sync: false
     routes:
       - type: rewrite
         source: /*
