@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: kalogram-api
+    env: node
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    envVars:
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: NUTRITION_API_KEY
+        sync: false
+      - key: NUTRITION_APP_ID
+        sync: false 

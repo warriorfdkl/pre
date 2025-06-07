@@ -1,0 +1,32 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #16161A;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Стили для Telegram Mini App */
+:root {
+  --tg-theme-bg-color: #16161A;
+  --tg-theme-text-color: #FFFFFE;
+  --tg-theme-hint-color: #94A1B2;
+  --tg-theme-link-color: #7F5AF0;
+  --tg-theme-button-color: #7F5AF0;
+  --tg-theme-button-text-color: #FFFFFE;
+}
+
+/* Запрет выделения текста */
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+} 

@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: kalogram
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./build
+    envVars:
+      - key: REACT_APP_OPENAI_API_KEY
+        sync: false
+      - key: REACT_APP_NUTRITION_API_KEY
+        sync: false
+      - key: REACT_APP_NUTRITION_APP_ID
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html 
