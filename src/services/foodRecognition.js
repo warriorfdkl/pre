@@ -1,5 +1,6 @@
 import { analyzeFood } from './nutritionService';
 import { logger } from '../utils/logger';
+import { showUserAlert } from '../utils/twaUtils';
 import WebApp from '@twa-dev/sdk';
 
 const API_KEY = process.env.REACT_APP_OPENAI_API_KEY;
@@ -101,7 +102,7 @@ export const analyzeFoodImage = async (imageBase64) => {
       userMessage = 'Не удалось определить тип еды. Попробуйте сделать более четкое фото.';
     }
     
-    WebApp.showAlert(userMessage);
+    showUserAlert(userMessage);
     throw error;
   }
 }; 

@@ -25,6 +25,7 @@ import {
 import WebApp from '@twa-dev/sdk';
 import './styles/animations.css';
 import { logger } from './utils/logger';
+import { showUserAlert } from './utils/twaUtils';
 
 // Импортируем компоненты
 import CameraView from './components/CameraView';
@@ -230,7 +231,7 @@ function App() {
       }
     } catch (error) {
       logger.error('Error during food analysis in App.js:', error);
-      WebApp.showAlert('Ошибка при анализе фото. Попробуйте еще раз.');
+      showUserAlert('Ошибка при анализе фото. Попробуйте еще раз.');
     } finally {
       logger.info('Image capture handler finished.');
       setLoading(false);
