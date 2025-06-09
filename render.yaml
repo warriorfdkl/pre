@@ -1,9 +1,17 @@
 services:
   - type: static
     name: kalogram-frontend
-    buildCommand: npm ci && npm run build
+    buildCommand: ./build.sh
     publishDir: build
     staticPublishPath: /
+    pullRequestPreviewsEnabled: true
+    buildFilter:
+      paths:
+        - src/**
+        - public/**
+        - package.json
+        - package-lock.json
+        - build.sh
     envVars:
       - key: NODE_VERSION
         value: 20.11.1
