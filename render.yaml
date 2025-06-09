@@ -3,12 +3,13 @@ services:
     name: kalogram-frontend
     buildCommand: npm install && npm run build
     publishDir: build
-    envVars:
-      - key: NODE_VERSION
-        value: 18
-      - key: NODE_ENV
-        value: production
+    staticPublishPath: /
+    headers:
+      - source: /**
+        headers:
+          - key: Cache-Control
+            value: no-cache
     routes:
       - type: rewrite
-        source: /*
+        source: /**
         destination: /index.html 
