@@ -24,6 +24,7 @@ import {
 } from '@mui/icons-material';
 import WebApp from '@twa-dev/sdk';
 import './styles/animations.css';
+import { logger } from './utils/logger';
 
 // Импортируем компоненты
 import CameraView from './components/CameraView';
@@ -214,14 +215,24 @@ function App() {
     setShowCamera(false);
     setLoading(true);
     setCapturedImage(imageDataUrl);
+    logger.info('Image capture handler started.');
 
     try {
+      logger.info('Calling analyzeFoodImage...');
       const result = await analyzeFoodImage(imageDataUrl);
-      setAnalysisResult(result);
-      setCurrentView('result');
+      logger.info('analyzeFoodImage returned:', result);
+
+      if (result) {
+        setAnalysisResult(result);
+        setCurrentView('result');
+      } else {
+        throw new Error('Analysis returned no result');
+      }
     } catch (error) {
+      logger.error('Error during food analysis in App.js:', error);
       WebApp.showAlert('Ошибка при анализе фото. Попробуйте еще раз.');
     } finally {
+      logger.info('Image capture handler finished.');
       setLoading(false);
     }
   };
