@@ -1,9 +1,16 @@
 services:
   - type: static
     name: kalogram-frontend
-    buildCommand: npm install && npm run build
+    buildCommand: npm ci && npm run build
     publishDir: build
     staticPublishPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: 20.11.1
+      - key: NODE_ENV
+        value: production
+      - key: CI
+        value: false
     headers:
       - source: /**
         headers:
