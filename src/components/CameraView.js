@@ -1,11 +1,15 @@
 import React, { useRef, useState } from 'react';
 import { Box, IconButton, Paper, Typography } from '@mui/material';
 import { CameraAlt, Cameraswitch, PhotoCamera } from '@mui/icons-material';
+import { logger } from '../utils/logger';
+import { validateImage, compressImage } from '../utils/imageUtils';
+import WebApp from '@twa-dev/sdk';
 
 const CameraView = ({ onCapture, onClose }) => {
   const videoRef = useRef(null);
   const [stream, setStream] = useState(null);
   const [facingMode, setFacingMode] = useState('environment');
+  const [isCapturing, setIsCapturing] = useState(false);
 
   const startCamera = async () => {
     try {
@@ -18,7 +22,9 @@ const CameraView = ({ onCapture, onClose }) => {
         videoRef.current.srcObject = mediaStream;
       }
     } catch (err) {
-      console.error('Ошибка доступа к камере:', err);
+      logger.error('Ошибка доступа к камере:', err);
+      WebApp.showAlert('Не удалось получить доступ к камере. Проверьте разрешения.');
+      onClose();
     }
   };
 
@@ -28,15 +34,35 @@ const CameraView = ({ onCapture, onClose }) => {
     }
   };
 
-  const handleCapture = () => {
-    const canvas = document.createElement('canvas');
-    const video = videoRef.current;
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext('2d').drawImage(video, 0, 0);
-    const imageDataUrl = canvas.toDataURL('image/jpeg');
-    onCapture(imageDataUrl);
-    stopCamera();
+  const handleCapture = async () => {
+    if (isCapturing) return;
+    setIsCapturing(true);
+
+    try {
+      const canvas = document.createElement('canvas');
+      const video = videoRef.current;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext('2d').drawImage(video, 0, 0);
+      
+      let imageDataUrl = canvas.toDataURL('image/jpeg');
+      
+      // Валидируем изображение
+      validateImage(imageDataUrl);
+      
+      // Сжимаем изображение если нужно
+      imageDataUrl = await compressImage(imageDataUrl);
+      
+      logger.debug('Image captured and processed', { size: imageDataUrl.length });
+      
+      onCapture(imageDataUrl);
+      stopCamera();
+    } catch (error) {
+      logger.error('Ошибка при захвате фото:', error);
+      WebApp.showAlert('Не удалось сделать фото. Попробуйте еще раз.');
+    } finally {
+      setIsCapturing(false);
+    }
   };
 
   const toggleCamera = () => {
@@ -92,18 +118,24 @@ const CameraView = ({ onCapture, onClose }) => {
         <IconButton
           onClick={onClose}
           sx={{ color: 'white' }}
+          disabled={isCapturing}
         >
           <CameraAlt />
         </IconButton>
         
         <IconButton
           onClick={handleCapture}
+          disabled={isCapturing}
           sx={{
             width: 72,
             height: 72,
             border: '4px solid white',
             bgcolor: 'transparent',
-            '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' }
+            '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' },
+            '&.Mui-disabled': {
+              opacity: 0.5,
+              border: '4px solid rgba(255,255,255,0.5)'
+            }
           }}
         >
           <PhotoCamera sx={{ color: 'white', fontSize: 32 }} />
@@ -112,6 +144,7 @@ const CameraView = ({ onCapture, onClose }) => {
         <IconButton
           onClick={toggleCamera}
           sx={{ color: 'white' }}
+          disabled={isCapturing}
         >
           <Cameraswitch />
         </IconButton>
@@ -129,7 +162,7 @@ const CameraView = ({ onCapture, onClose }) => {
           textShadow: '0 1px 2px rgba(0,0,0,0.5)'
         }}
       >
-        Наведите камеру на еду
+        {isCapturing ? 'Обработка...' : 'Наведите камеру на еду'}
       </Typography>
     </Box>
   );
