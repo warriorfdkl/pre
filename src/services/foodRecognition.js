@@ -27,14 +27,15 @@ export const analyzeFoodImage = async (imageBase64) => {
         'Authorization': `Bearer ${API_KEY}`
       },
       body: JSON.stringify({
-        model: "gpt-4-vision-preview",
+        model: "gpt-4-turbo",
+        response_format: { type: "json_object" },
         messages: [
           {
             role: "user",
             content: [
               {
                 type: "text",
-                text: "Опиши что за еда на фото и примерный размер порции в граммах. Формат ответа строго такой: 'food: название блюда, weight: вес в граммах'. Пример: 'food: куриная грудка с рисом, weight: 350'"
+                text: "Опиши что за еда на фото и примерный размер порции в граммах. Формат ответа строго JSON: {\"food\": \"название блюда\", \"weight\": вес в граммах}. Пример: {\"food\": \"куриная грудка с рисом\", \"weight\": 350}"
               },
               {
                 type: "image_url",
@@ -62,20 +63,24 @@ export const analyzeFoodImage = async (imageBase64) => {
       throw new Error('Invalid response format from OpenAI');
     }
 
-    const result = data.choices[0].message.content;
-    logger.debug('Parsed result:', result);
-    
-    // Парсим результат
-    const foodMatch = result.match(/food: (.*?),/);
-    const weightMatch = result.match(/weight: (\d+)/);
-    
-    if (!foodMatch || !weightMatch) {
-      logger.error('Parse Error. Response:', result);
-      throw new Error('Failed to parse food recognition result');
+    const resultText = data.choices[0].message.content;
+    logger.debug('OpenAI raw response:', resultText);
+
+    let parsedResult;
+    try {
+      parsedResult = JSON.parse(resultText);
+    } catch (parseError) {
+      logger.error('JSON Parse Error. Response text:', resultText, parseError);
+      throw new Error('Failed to parse JSON response from AI');
     }
 
-    const foodName = foodMatch[1];
-    const weight = parseInt(weightMatch[1]);
+    const foodName = parsedResult.food;
+    const weight = parsedResult.weight;
+
+    if (!foodName || typeof weight !== 'number') {
+      logger.error('Parse Error. Invalid JSON structure:', parsedResult);
+      throw new Error('Invalid JSON structure in AI response');
+    }
 
     // Второй запрос к Nutrition API для получения пищевой ценности
     const nutritionData = await analyzeFood(`${weight}g ${foodName}`);
@@ -98,8 +103,8 @@ export const analyzeFoodImage = async (imageBase64) => {
     
     if (error.message.includes('API key')) {
       userMessage = 'Ошибка конфигурации. Пожалуйста, обратитесь к администратору.';
-    } else if (error.message.includes('Invalid response format')) {
-      userMessage = 'Не удалось определить тип еды. Попробуйте сделать более четкое фото.';
+    } else if (error.message.includes('Invalid response format') || error.message.includes('parse') || error.message.includes('Invalid JSON structure')) {
+      userMessage = 'Не удалось определить тип еды. Попробуйте сделать более четкое фото или изменить ракурс.';
     }
     
     showUserAlert(userMessage);
