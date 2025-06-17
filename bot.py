@@ -1,5 +1,5 @@
 import logging
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, ContextTypes, filters
 import os
 from dotenv import load_dotenv
@@ -16,15 +16,20 @@ TOKEN = os.getenv('TELEGRAM_TOKEN')
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Send a message when the command /start is issued."""
+    web_app_url = os.getenv("RENDER_EXTERNAL_URL", "https://kalogram-frontend.onrender.com")
     keyboard = [
         [InlineKeyboardButton("📸 Сканировать еду", callback_data='scan_food')],
         [InlineKeyboardButton("📊 История", callback_data='history')],
-        [InlineKeyboardButton("ℹ️ Помощь", callback_data='help')]
+        [InlineKeyboardButton("ℹ️ Помощь", callback_data='help')],
+        [InlineKeyboardButton(
+            "🚀 Открыть мини-приложение",
+            web_app=WebAppInfo(url=web_app_url)
+        )]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     welcome_message = (
-        "👋 Привет! Я бот для подсчета калорий.\n\n"
+        "👋 Привет! Я бот для подсчёта калорий.\n\n"
         "📸 Отправьте мне фото еды, и я:\n"
         "- Распознаю что на фото\n"
         "- Подсчитаю калории\n"
